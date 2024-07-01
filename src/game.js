@@ -15,9 +15,9 @@ class Penguin {
     }
   }
 
-  getTop() {
+  getBottom() {
     return parseInt(
-      window.getComputedStyle(this.element).getPropertyValue("top")
+      window.getComputedStyle(this.element).getPropertyValue("bottom")
     );
   }
 }
@@ -67,14 +67,14 @@ class Fish {
 
   resetPosition() {
     this.element.style.right = "-20px";
-    this.element.style.bottom = Math.floor(Math.random() * 120 + 40) + "px"; // Випадкова висота між 40 і 160 пікселів
+    this.element.style.bottom = Math.floor(Math.random() * 120 + 40) + "px";
   }
 }
 
 class Game {
-  constructor(penguinElement, icebergElement, fishElement) {
+  constructor(penguinElement, icebergElements, fishElement) {
     this.penguin = new Penguin(penguinElement);
-    this.iceberg = new Iceberg(icebergElement);
+    this.icebergs = icebergElements.map((element) => new Iceberg(element));
     this.fish = new Fish(fishElement);
     this.score = 0;
     this.isAlive = true;
@@ -91,20 +91,25 @@ class Game {
 
   checkCollision() {
     this.collisionInterval = setInterval(() => {
-      const penguinTop = this.penguin.getTop();
-      const icebergLeft = this.iceberg.getLeft();
+      const penguinBottom = this.penguin.getBottom();
+      this.icebergs.forEach((iceberg) => {
+        const icebergLeft = iceberg.getLeft();
+
+        // Check collision with iceberg
+        if (icebergLeft < 90 && icebergLeft > 50 && penguinBottom < 50) {
+          this.gameOver();
+        }
+      });
+
       const fishLeft = this.fish.getLeft();
       const fishBottom = this.fish.getBottom();
 
-      if (icebergLeft < 90 && icebergLeft > 50 && penguinTop >= 140) {
-        this.gameOver();
-      }
-
+      // Check if penguin collects the fish
       if (
         fishLeft < 90 &&
         fishLeft > 50 &&
-        penguinTop >= fishBottom - 20 &&
-        penguinTop <= fishBottom + 20
+        penguinBottom >= fishBottom - 20 &&
+        penguinBottom <= fishBottom + 20
       ) {
         this.score += 1;
         this.fish.resetPosition();
@@ -115,7 +120,7 @@ class Game {
 
   increaseDifficulty() {
     this.speedInterval = setInterval(() => {
-      this.iceberg.increaseSpeed();
+      this.icebergs.forEach((iceberg) => iceberg.increaseSpeed());
     }, 5000);
   }
 
@@ -129,7 +134,9 @@ class Game {
 
 document.addEventListener("DOMContentLoaded", () => {
   const penguinElement = document.getElementById("penguin");
-  const icebergElement = document.getElementById("iceberg");
+  const icebergElements = Array.from(
+    document.getElementsByClassName("iceberg")
+  );
   const fishElement = document.getElementById("fish");
-  new Game(penguinElement, icebergElement, fishElement);
+  new Game(penguinElement, icebergElements, fishElement);
 });
