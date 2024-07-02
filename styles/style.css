@@ -1,90 +1,10 @@
 body {
-  margin: 0;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  font-family: cursive;
+  text-align: center;
+}
+
+#board {
   background: #4ca1af;
   background: -webkit-linear-gradient(to right, #c4e0e5, #4ca1af);
   background: linear-gradient(to right, #c4e0e5, #4ca1af);
-  font-family: Arial, sans-serif;
-
-  #game {
-    position: relative;
-    width: 700px;
-    height: 500px;
-    border: 1px solid #ccc;
-    background: linear-gradient(to right, #c4e0e5, #4ca1af);
-    overflow: hidden;
-  }
-
-  .penguin {
-    position: absolute;
-    bottom: 0;
-    left: 100px;
-    width: 100px;
-    height: 100px;
-    background-color: #c4e0e5;
-    background-image: url("penguin.png");
-    background-size: cover;
-  }
-
-  .iceberg {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 20px;
-    height: 50px;
-    background-color: #333;
-    background-image: url("iceberg.png");
-    background-size: cover;
-    animation: moveIceberg 2s linear infinite;
-  }
-
-  .fish {
-    position: absolute;
-    bottom: 100px;
-    right: 0;
-    width: 40px;
-    height: 30px;
-    background-color: yellow;
-    background-image: url("fish-easy-drawing.png");
-    background-size: cover;
-    animation: moveFish 3s linear infinite;
-  }
-
-  @keyframes moveIceberg {
-    from {
-      right: -20px;
-    }
-    to {
-      right: 600px;
-    }
-  }
-
-  @keyframes moveFish {
-    from {
-      right: -20px;
-    }
-    to {
-      right: 600px;
-    }
-  }
-
-  .jump {
-    animation: jump 0.3s;
-  }
-
-  @keyframes jump {
-    0% {
-      bottom: 0;
-    }
-    50% {
-      bottom: 80px;
-    }
-    100% {
-      bottom: 0;
-    }
-  }
 }
