@@ -16,6 +16,11 @@ class Penguin {
   update() {
     this.velocityY += gravity;
     this.y = Math.max(this.y + this.velocityY, 0);
+
+    if (this.y + this.height > boardHeight) {
+      this.y = boardHeight - this.height;
+      this.velocityY = 0;
+    }
   }
 
   reset() {
@@ -101,11 +106,11 @@ class Game {
     this.gameOver = false;
     this.score = 0;
 
-    this.bottomIcebergImgSrc = "./images/iceberg.png";
+    this.bottomIcebergImgSrc = "./images/iceberg1.png";
     this.fishImgSrc = "./images/fish.png";
 
-    this.icebergSpawnInterval = 5000; // Spawn icebergs every 5 seconds
-    this.fishSpawnInterval = 7000; // Spawn fish every 7 seconds
+    this.icebergSpawnInterval = 7000; // Spawn icebergs every 5 seconds
+    this.fishSpawnInterval = 5000; // Spawn fish every 7 seconds
 
     this.init();
   }
@@ -181,7 +186,7 @@ class Game {
     this.penguin.update();
     this.penguin.draw(this.context);
 
-    if (this.penguin.y > this.board.height) {
+    if (this.penguin.y + this.penguin.height >= this.board.height) {
       this.gameOver = true;
     }
 
@@ -281,18 +286,25 @@ class Game {
   }
 }
 
-let penguinWidth = 150; // Adjusted size
-let penguinHeight = 100; // Adjusted size
-let penguinX = 50; // Adjusted position
-let penguinY = 400; // Adjusted position
-let icebergWidth = 200; // Adjusted size
-let icebergHeight = 100; // Adjusted size
-let fishWidth = 50; // Adjusted size
-let fishHeight = 50; // Adjusted size
+// Define board dimensions globally
+const boardWidth = 800;
+const boardHeight = 600;
 
-let velocityX = -2; // Adjusted speed
-let gravity = 0.2; // Adjusted gravity
+let penguinWidth = 250;
+let penguinHeight = 200;
+let penguinX = 100;
+let penguinY = boardHeight / 2 - penguinHeight / 2;
+let icebergWidth = 400;
+let icebergHeight = 200;
+let fishWidth = 250;
+let fishHeight = 250;
+
+let velocityX = -2;
+let gravity = 0.2;
 
 window.onload = function () {
+  const canvas = document.getElementById("board");
+  canvas.width = boardWidth;
+  canvas.height = boardHeight;
   new Game();
 };
