@@ -1,10 +1,45 @@
 body {
-  font-family: cursive;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: #4ca1af; /* Fallback color */
+  background: -webkit-linear-gradient(
+    to right,
+    #c4e0e5,
+    #4ca1af
+  ); /* For Chrome and Safari */
+  background: linear-gradient(to right, #c4e0e5, #4ca1af); /* Standard syntax */
 }
 
-#board {
-  background: #4ca1af;
-  background: -webkit-linear-gradient(to right, #c4e0e5, #4ca1af);
-  background: linear-gradient(to right, #c4e0e5, #4ca1af);
+#start-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+#start-page h1 {
+  font-size: 3rem; /* Adjust the font size as needed */
+  font-family: "Cursive", cursive; /* Use a cursive font */
+  color: white; /* White color */
+}
+
+#start-page p {
+  font-size: 1.5rem; /* Adjust the font size as needed */
+  color: white; /* White color */
+}
+
+#start-button {
+  padding: 10px 20px;
+  font-size: 24px;
+  cursor: pointer;
+  margin-top: 20px;
 }

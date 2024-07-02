@@ -81,19 +81,13 @@ class Fish {
   update() {
     this.x += velocityX;
   }
-
-  respawn() {
-    this.visible = true;
-    this.x = boardWidth;
-    this.y = Math.random() * (boardHeight - this.height);
-  }
 }
 
 class Game {
   constructor() {
     this.board = document.getElementById("board");
-    this.board.height = boardHeight;
-    this.board.width = boardWidth;
+    this.startPage = document.getElementById("start-page");
+    this.startButton = document.getElementById("start-button");
     this.context = this.board.getContext("2d");
     this.penguin = new Penguin(
       penguinX,
@@ -110,18 +104,62 @@ class Game {
     this.bottomIcebergImgSrc = "./images/iceberg.png";
     this.fishImgSrc = "./images/fish.png";
 
+    this.icebergSpawnInterval = 5000; // Spawn icebergs every 5 seconds
+    this.fishSpawnInterval = 7000; // Spawn fish every 7 seconds
+
     this.init();
   }
 
   init() {
-    this.penguin.img.onload = () => {
-      this.penguin.draw(this.context);
+    this.startButton.addEventListener("click", () => this.startGame());
+    this.drawStartPage();
+  }
+
+  drawStartPage() {
+    this.board.style.display = "none";
+    this.startPage.style.display = "flex";
+  }
+
+  startGame() {
+    this.startPage.style.display = "none";
+    this.board.style.display = "block";
+
+    // Load images and start game loop after images are loaded
+    this.loadImages(() => {
+      this.setupEventListeners();
+      this.startGameLoop();
+    });
+  }
+
+  loadImages(callback) {
+    let imagesLoaded = 0;
+    const totalImages = 3; // Update this if you add more images
+
+    const checkAllImagesLoaded = () => {
+      imagesLoaded++;
+      console.log(`Images loaded: ${imagesLoaded}/${totalImages}`);
+      if (imagesLoaded === totalImages) {
+        callback();
+      }
     };
 
-    this.setupEventListeners();
-    this.startGameLoop();
-    this.placeIcebergs();
-    this.spawnFish();
+    this.penguin.img.onload = checkAllImagesLoaded;
+    this.penguin.img.src = "./images/penguin.png";
+
+    // Load iceberg image
+    this.bottomIcebergImg = new Image();
+    this.bottomIcebergImg.onload = checkAllImagesLoaded;
+    this.bottomIcebergImg.src = this.bottomIcebergImgSrc;
+
+    // Load fish image
+    this.fishImg = new Image();
+    this.fishImg.onload = checkAllImagesLoaded;
+    this.fishImg.src = this.fishImgSrc;
+
+    // Ensure callback is called if no images are loaded
+    if (totalImages === 0) {
+      callback();
+    }
   }
 
   setupEventListeners() {
@@ -130,8 +168,8 @@ class Game {
 
   startGameLoop() {
     requestAnimationFrame(() => this.update());
-    setInterval(() => this.placeIcebergs(), 3000);
-    setInterval(() => this.spawnFish(), 7000);
+    setInterval(() => this.placeIcebergs(), this.icebergSpawnInterval);
+    setInterval(() => this.spawnFish(), this.fishSpawnInterval);
   }
 
   update() {
@@ -152,13 +190,18 @@ class Game {
       iceberg.update();
       iceberg.draw(this.context);
 
+      if (iceberg.x + iceberg.width < 0) {
+        iceberg.x = this.board.width;
+        iceberg.y =
+          this.board.height -
+          iceberg.height -
+          Math.random() * (this.board.height / 2);
+        iceberg.passed = false;
+      }
+
       if (!iceberg.passed && this.penguin.x > iceberg.x + iceberg.width) {
         this.score += 0.5;
         iceberg.passed = true;
-      }
-
-      if (this.detectCollision(this.penguin, iceberg)) {
-        this.gameOver = true;
       }
     });
 
@@ -168,15 +211,13 @@ class Game {
       fish.draw(this.context);
 
       if (this.penguin.catchFish(fish)) {
-        this.score += 10; // Score increases when penguin catches fish
+        this.score += 10;
         fish.visible = false;
       }
     });
 
-    // Clear icebergs that are out of the board
-    this.icebergArray = this.icebergArray.filter(
-      (iceberg) => iceberg.x >= -icebergWidth
-    );
+    // Clear fish that are out of the board
+    this.fishArray = this.fishArray.filter((fish) => fish.x >= -fish.width);
 
     // Draw score
     this.context.fillStyle = "white";
@@ -193,31 +234,36 @@ class Game {
   placeIcebergs() {
     if (this.gameOver) return;
 
-    let randomIcebergY =
-      icebergY - icebergHeight / 4 - Math.random() * (icebergHeight / 2);
-    let openingSpace = board.height / 4;
-
-    let bottomIceberg = new Iceberg(
-      icebergX,
-      randomIcebergY + icebergHeight + openingSpace,
+    let icebergY =
+      this.board.height -
+      icebergHeight -
+      Math.random() * (this.board.height / 2);
+    let iceberg = new Iceberg(
+      this.board.width,
+      icebergY,
       icebergWidth,
       icebergHeight,
       this.bottomIcebergImgSrc
     );
-    this.icebergArray.push(bottomIceberg);
+    this.icebergArray.push(iceberg);
   }
 
   spawnFish() {
     if (this.gameOver) return;
 
-    let fish = new Fish(
-      boardWidth,
-      Math.random() * (boardHeight - fishHeight),
-      fishWidth,
-      fishHeight,
-      this.fishImgSrc
-    );
-    this.fishArray.push(fish);
+    let spawnFishChance = Math.random();
+    if (spawnFishChance < 0.3) {
+      // Adjust this probability as needed
+      let fish = new Fish(
+        this.board.width,
+        Math.random() * (this.board.height - fishHeight),
+        fishWidth,
+        fishHeight,
+        this.fishImgSrc
+      );
+      fish.visible = true;
+      this.fishArray.push(fish);
+    }
   }
 
   movePenguin(e) {
@@ -230,35 +276,22 @@ class Game {
         this.fishArray = [];
         this.score = 0;
         this.gameOver = false;
-        this.spawnFish();
       }
     }
   }
-
-  detectCollision(a, b) {
-    const aRight = a.x + a.width;
-    const aBottom = a.y + a.height;
-    const bRight = b.x + b.width;
-    const bBottom = b.y + b.height;
-
-    return aRight > b.x && a.x < bRight && aBottom > b.y && a.y < bBottom;
-  }
 }
 
-let boardWidth = 700;
-let boardHeight = 400;
-let penguinWidth = 150;
-let penguinHeight = 100;
-let penguinX = boardWidth / 8;
-let penguinY = boardHeight / 2;
-let icebergWidth = 200;
-let icebergHeight = 100;
-let icebergX = boardWidth;
-let icebergY = 0;
-let fishWidth = 50;
-let fishHeight = 50;
-let velocityX = -2;
-let gravity = 0.2;
+let penguinWidth = 150; // Adjusted size
+let penguinHeight = 100; // Adjusted size
+let penguinX = 50; // Adjusted position
+let penguinY = 400; // Adjusted position
+let icebergWidth = 200; // Adjusted size
+let icebergHeight = 100; // Adjusted size
+let fishWidth = 50; // Adjusted size
+let fishHeight = 50; // Adjusted size
+
+let velocityX = -2; // Adjusted speed
+let gravity = 0.2; // Adjusted gravity
 
 window.onload = function () {
   new Game();
