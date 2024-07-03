@@ -4,7 +4,7 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background: #4ca1af; /* Fallback color */
+  background: white;
   background: -webkit-linear-gradient(
     to right,
     #c4e0e5,
@@ -52,6 +52,6 @@ body {
   position: absolute;
   width: 70%;
   height: 70%;
-  background-image: url("./images/north.jpg");
+  background-color: aliceblue;
   z-index: 1;
 }
