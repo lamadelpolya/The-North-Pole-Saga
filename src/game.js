@@ -205,7 +205,7 @@ class Game {
       }
 
       if (!iceberg.passed && this.penguin.x > iceberg.x + iceberg.width) {
-        this.score += 0.5;
+        this.score += 1;
         iceberg.passed = true;
       }
     });
@@ -216,7 +216,7 @@ class Game {
       fish.draw(this.context);
 
       if (this.penguin.catchFish(fish)) {
-        this.score += 10;
+        this.score += 1;
         fish.visible = false;
       }
     });
@@ -294,10 +294,10 @@ let penguinWidth = 150;
 let penguinHeight = 150;
 let penguinX = 100;
 let penguinY = boardHeight / 2 - penguinHeight / 2;
-let icebergWidth = 300;
-let icebergHeight = 200;
+let icebergWidth = 200;
+let icebergHeight = 100;
 let fishWidth = 250;
-let fishHeight = 250;
+let fishHeight = 300;
 
 let velocityX = -2;
 let gravity = 0.2;
