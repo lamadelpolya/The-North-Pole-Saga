@@ -10,7 +10,7 @@ body {
 #board {
   width: 70%;
   height: 70%;
-  background-image: url("./images/north.png");
+  background-image: url("north.png");
 }
 #start-page {
   display: flex;
@@ -21,7 +21,7 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: url(./images/totalscreen.png);
+  background-image: url("totalscreen.png");
   z-index: 1;
 }
 
