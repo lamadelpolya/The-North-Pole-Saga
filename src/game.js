@@ -1,4 +1,4 @@
-class Entity {
+class Penguin {
   constructor(x, y, width, height, imgSrc) {
     this.x = x;
     this.y = y;
@@ -6,22 +6,17 @@ class Entity {
     this.height = height;
     this.img = new Image();
     this.img.src = imgSrc;
+    this.velocityY = 0;
   }
 
   draw(context) {
     context.drawImage(this.img, this.x, this.y, this.width, this.height);
   }
-}
-
-class Penguin extends Entity {
-  constructor(x, y, width, height, imgSrc) {
-    super(x, y, width, height, imgSrc);
-    this.velocityY = 0;
-  }
 
   update() {
     this.velocityY += gravity;
     this.y = Math.max(this.y + this.velocityY, 0);
+
     if (this.y + this.height > boardHeight) {
       this.y = boardHeight - this.height;
       this.velocityY = 0;
@@ -38,30 +33,53 @@ class Penguin extends Entity {
     const penguinBottom = this.y + this.height;
     const fishRight = fish.x + fish.width;
     const fishBottom = fish.y + fish.height;
-    return (
+
+    if (
       penguinRight > fish.x &&
       this.x < fishRight &&
       penguinBottom > fish.y &&
       this.y < fishBottom
-    );
+    ) {
+      return true;
+    }
+    return false;
   }
 }
 
-class Iceberg extends Entity {
+class Iceberg {
+  constructor(x, y, width, height, imgSrc) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.img = new Image();
+    this.img.src = imgSrc;
+    this.passed = false;
+  }
+
+  draw(context) {
+    context.drawImage(this.img, this.x, this.y, this.width, this.height);
+  }
+
   update() {
     this.x += velocityX;
   }
 }
 
-class Fish extends Entity {
+class Fish {
   constructor(x, y, width, height, imgSrc) {
-    super(x, y, width, height, imgSrc);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.img = new Image();
+    this.img.src = imgSrc;
     this.visible = false;
   }
 
   draw(context) {
     if (this.visible) {
-      super.draw(context);
+      context.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
   }
 
@@ -88,6 +106,12 @@ class Game {
     this.gameOver = false;
     this.score = 0;
 
+    this.bottomIcebergImgSrc = "./images/iceberg1.png";
+    this.fishImgSrc = "./images/fish.png";
+
+    this.icebergSpawnInterval = 7000; // Spawn icebergs every 5 seconds
+    this.fishSpawnInterval = 5000; // Spawn fish every 7 seconds
+
     this.init();
   }
 
@@ -104,6 +128,8 @@ class Game {
   startGame() {
     this.startPage.style.display = "none";
     this.board.style.display = "block";
+
+    // Load images and start game loop after images are loaded
     this.loadImages(() => {
       this.setupEventListeners();
       this.startGameLoop();
@@ -111,19 +137,34 @@ class Game {
   }
 
   loadImages(callback) {
-    const images = [this.penguin.img, new Image(), new Image()];
-    images[1].src = "./images/iceberg1.png";
-    images[2].src = "./images/fish.png";
     let imagesLoaded = 0;
+    const totalImages = 3; // Update this if you add more images
 
-    images.forEach((img) => {
-      img.onload = () => {
-        imagesLoaded++;
-        if (imagesLoaded === images.length) {
-          callback();
-        }
-      };
-    });
+    const checkAllImagesLoaded = () => {
+      imagesLoaded++;
+      console.log(`Images loaded: ${imagesLoaded}/${totalImages}`);
+      if (imagesLoaded === totalImages) {
+        callback();
+      }
+    };
+
+    this.penguin.img.onload = checkAllImagesLoaded;
+    this.penguin.img.src = "./images/penguin.png";
+
+    // Load iceberg image
+    this.bottomIcebergImg = new Image();
+    this.bottomIcebergImg.onload = checkAllImagesLoaded;
+    this.bottomIcebergImg.src = this.bottomIcebergImgSrc;
+
+    // Load fish image
+    this.fishImg = new Image();
+    this.fishImg.onload = checkAllImagesLoaded;
+    this.fishImg.src = this.fishImgSrc;
+
+    // Ensure callback is called if no images are loaded
+    if (totalImages === 0) {
+      callback();
+    }
   }
 
   setupEventListeners() {
@@ -132,13 +173,16 @@ class Game {
 
   startGameLoop() {
     requestAnimationFrame(() => this.update());
-    setInterval(() => this.spawnFish(), 7000);
+    setInterval(() => this.placeIcebergs(), this.icebergSpawnInterval);
+    setInterval(() => this.spawnFish(), this.fishSpawnInterval);
   }
 
   update() {
     if (this.gameOver) return;
 
     this.context.clearRect(0, 0, this.board.width, this.board.height);
+
+    // Update and draw penguin
     this.penguin.update();
     this.penguin.draw(this.context);
 
@@ -146,10 +190,44 @@ class Game {
       this.gameOver = true;
     }
 
-    this.updateEntities(this.icebergArray);
-    this.updateEntities(this.fishArray, true);
+    // Update and draw icebergs
+    this.icebergArray.forEach((iceberg) => {
+      iceberg.update();
+      iceberg.draw(this.context);
 
-    this.drawScore();
+      if (iceberg.x + iceberg.width < 0) {
+        iceberg.x = this.board.width;
+        iceberg.y =
+          this.board.height -
+          iceberg.height -
+          Math.random() * (this.board.height / 2);
+        iceberg.passed = false;
+      }
+
+      if (!iceberg.passed && this.penguin.x > iceberg.x + iceberg.width) {
+        this.score += 0.5;
+        iceberg.passed = true;
+      }
+    });
+
+    // Update and draw fish
+    this.fishArray.forEach((fish) => {
+      fish.update();
+      fish.draw(this.context);
+
+      if (this.penguin.catchFish(fish)) {
+        this.score += 10;
+        fish.visible = false;
+      }
+    });
+
+    // Clear fish that are out of the board
+    this.fishArray = this.fishArray.filter((fish) => fish.x >= -fish.width);
+
+    // Draw score
+    this.context.fillStyle = "white";
+    this.context.font = "45px sans-serif";
+    this.context.fillText(this.score, 5, 45);
 
     if (this.gameOver) {
       this.context.fillText("GAME OVER", 5, 90);
@@ -158,33 +236,35 @@ class Game {
     }
   }
 
-  updateEntities(array, checkCollision = false) {
-    array.forEach((entity) => {
-      entity.update();
-      entity.draw(this.context);
-      if (checkCollision && this.penguin.catchFish(entity)) {
-        this.score += 10;
-        entity.visible = false;
-      }
-    });
-    array = array.filter((entity) => entity.x >= -entity.width);
-  }
+  placeIcebergs() {
+    if (this.gameOver) return;
 
-  drawScore() {
-    this.context.fillStyle = "white";
-    this.context.font = "45px sans-serif";
-    this.context.fillText(this.score, 5, 45);
+    let icebergY =
+      this.board.height -
+      icebergHeight -
+      Math.random() * (this.board.height / 2);
+    let iceberg = new Iceberg(
+      this.board.width,
+      icebergY,
+      icebergWidth,
+      icebergHeight,
+      this.bottomIcebergImgSrc
+    );
+    this.icebergArray.push(iceberg);
   }
 
   spawnFish() {
     if (this.gameOver) return;
-    if (Math.random() < 0.3) {
+
+    let spawnFishChance = Math.random();
+    if (spawnFishChance < 0.3) {
+      // Adjust this probability as needed
       let fish = new Fish(
         this.board.width,
         Math.random() * (this.board.height - fishHeight),
         fishWidth,
         fishHeight,
-        "./images/fish.png"
+        this.fishImgSrc
       );
       fish.visible = true;
       this.fishArray.push(fish);
@@ -192,8 +272,9 @@ class Game {
   }
 
   movePenguin(e) {
-    if (["Space", "ArrowUp", "KeyX"].includes(e.code)) {
+    if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
       this.penguin.velocityY = -6;
+
       if (this.gameOver) {
         this.penguin.reset();
         this.icebergArray = [];
@@ -205,21 +286,21 @@ class Game {
   }
 }
 
-// Define board dimensions and global variables
-const boardWidth = 1000;
+// Define board dimensions globally
+const boardWidth = 800;
 const boardHeight = 600;
 
-const penguinWidth = 300;
-const penguinHeight = 350;
-const penguinX = 50;
-const penguinY = 50;
-const icebergWidth = 100;
-const icebergHeight = 100;
-const fishWidth = 350;
-const fishHeight = 300;
+let penguinWidth = 150;
+let penguinHeight = 150;
+let penguinX = 100;
+let penguinY = boardHeight / 2 - penguinHeight / 2;
+let icebergWidth = 300;
+let icebergHeight = 200;
+let fishWidth = 250;
+let fishHeight = 250;
 
-const velocityX = -2;
-const gravity = 0.2;
+let velocityX = -2;
+let gravity = 0.2;
 
 window.onload = function () {
   const canvas = document.getElementById("board");
