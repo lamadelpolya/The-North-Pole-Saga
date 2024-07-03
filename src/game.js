@@ -225,12 +225,16 @@ class Game {
     this.fishArray = this.fishArray.filter((fish) => fish.x >= -fish.width);
 
     // Draw score
+    const centerX = this.board.width / 2;
+    const centerY = this.board.height / 2;
+    this.context.textAlign = "center";
+
     this.context.fillStyle = "white";
-    this.context.font = "45px sans-serif";
-    this.context.fillText(this.score, 5, 45);
+    this.context.font = "50px cursive";
+    this.context.fillText(this.score, 35, 55);
 
     if (this.gameOver) {
-      this.context.fillText("GAME OVER", 5, 90);
+      this.context.fillText("GAME OVER", centerX, centerY + 50); // Adjust the Y coordinate as needed
     } else {
       requestAnimationFrame(() => this.update());
     }
