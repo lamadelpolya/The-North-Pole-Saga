@@ -8,9 +8,9 @@ body {
   background: linear-gradient(to right, #c4e0e5, #4ca1af);
 }
 #board {
-  width: 70%;
-  height: 70%;
-  background-image: url("north.png");
+  width: 100%;
+  height: 100%;
+  background-image: url("./north.png");
 }
 #start-page {
   display: flex;
@@ -19,9 +19,14 @@ body {
   align-items: center;
   text-align: center;
   position: absolute;
+  top: 0;
+  left: 0;
+  background-image: url("./totalscreen.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   width: 100%;
   height: 100%;
-  background-image: url("totalscreen.png");
   z-index: 1;
 }
 
