@@ -5,7 +5,7 @@ body {
   height: 100vh;
   margin: 0;
   background: white;
-  background: linear-gradient(to right, #c4e0e5, #4ca1af);
+  background: #76b1c3;
 }
 #board {
   display: flex;
@@ -15,7 +15,7 @@ body {
   width: 75%;
   height: 80%;
   z-index: 0;
-  background-image: url("./north.png");
+  background-image: url("./screen.png");
 }
 #start-page {
   display: flex;
@@ -26,7 +26,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background-image: url("./totalscreen.png");
+  background-image: url("./background.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;

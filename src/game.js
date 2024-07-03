@@ -109,8 +109,8 @@ class Game {
     this.bottomIcebergImgSrc = "./images/iceberg1.png";
     this.fishImgSrc = "./images/fish.png";
 
-    this.icebergSpawnInterval = 7000; // Spawn icebergs every 5 seconds
-    this.fishSpawnInterval = 5000; // Spawn fish every 7 seconds
+    this.icebergSpawnInterval = 6000; // Spawn icebergs every 5 seconds
+    this.fishSpawnInterval = 2000; // Spawn fish every 7 seconds
 
     this.init();
   }
@@ -230,8 +230,8 @@ class Game {
     this.context.textAlign = "center";
 
     this.context.fillStyle = "white";
-    this.context.font = "50px cursive";
-    this.context.fillText(this.score, 35, 55);
+    this.context.font = "30px cursive";
+    this.context.fillText("Score: " + this.score, 80, 55);
 
     if (this.gameOver) {
       this.context.fillText("GAME OVER", centerX, centerY + 50); // Adjust the Y coordinate as needed
@@ -261,7 +261,7 @@ class Game {
     if (this.gameOver) return;
 
     let spawnFishChance = Math.random();
-    if (spawnFishChance < 0.3) {
+    if (spawnFishChance < 1) {
       // Adjust this probability as needed
       let fish = new Fish(
         this.board.width,
@@ -290,6 +290,14 @@ class Game {
   }
 }
 
+// function detectCollision(a, b) {
+//   return (
+//     a.x < b.x + b.width && //a's top left corner doesn't reach b's top right corner
+//     a.x + a.width > b.x && //a's top right corner passes b's top left corner
+//     a.y < b.y + b.height && //a's top left corner doesn't reach b's bottom left corner
+//     a.y + a.height > b.y
+//   ); //a's bottom left corner passes b's top left corner
+// }
 // Define board dimensions globally
 const boardWidth = 800;
 const boardHeight = 600;
