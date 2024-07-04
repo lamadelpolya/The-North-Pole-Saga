@@ -252,7 +252,7 @@ class Game {
 
     // Draw score
     this.context.font = "30px Arial";
-    this.context.fillStyle = "black";
+    this.context.fillStyle = "white";
     this.context.fillText(`Score: ${this.score}`, 10, 50);
 
     // Check for game over
