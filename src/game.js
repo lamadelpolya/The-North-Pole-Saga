@@ -1,3 +1,93 @@
+class Penguin {
+  constructor(x, y, width, height, imgSrc) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.img = new Image();
+    this.img.src = imgSrc;
+    this.velocityY = 0;
+  }
+
+  draw(context) {
+    context.drawImage(this.img, this.x, this.y, this.width, this.height);
+  }
+
+  update() {
+    this.velocityY += gravity;
+    this.y = Math.max(this.y + this.velocityY, 0);
+
+    if (this.y + this.height > boardHeight) {
+      this.y = boardHeight - this.height;
+      this.velocityY = 0;
+    }
+  }
+
+  reset() {
+    this.y = penguinY;
+    this.velocityY = 0;
+  }
+
+  catchFish(fish) {
+    const penguinRight = this.x + this.width;
+    const penguinBottom = this.y + this.height;
+    const fishRight = fish.x + fish.width;
+    const fishBottom = fish.y + fish.height;
+
+    if (
+      penguinRight > fish.x &&
+      this.x < fishRight &&
+      penguinBottom > fish.y &&
+      this.y < fishBottom
+    ) {
+      return true;
+    }
+    return false;
+  }
+}
+
+class Iceberg {
+  constructor(x, y, width, height, imgSrc) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.img = new Image();
+    this.img.src = imgSrc;
+    this.passed = false;
+  }
+
+  draw(context) {
+    context.drawImage(this.img, this.x, this.y, this.width, this.height);
+  }
+
+  update() {
+    this.x += velocityX;
+  }
+}
+
+class Fish {
+  constructor(x, y, width, height, imgSrc) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.img = new Image();
+    this.img.src = imgSrc;
+    this.visible = false;
+  }
+
+  draw(context) {
+    if (this.visible) {
+      context.drawImage(this.img, this.x, this.y, this.width, this.height);
+    }
+  }
+
+  update() {
+    this.x += velocityX;
+  }
+}
+
 class Game {
   constructor() {
     this.board = document.getElementById("board");
@@ -21,12 +111,22 @@ class Game {
     this.bottomIcebergImgSrc = "./images/iceberg.png";
     this.fishImgSrc = "./images/fish1.png";
 
-    this.icebergSpawnInterval = 6000; // Spawn icebergs every 6 seconds
-    this.fishSpawnInterval = 2000; // Spawn fish every 2 seconds
-
+    this.icebergSpawnInterval = 6000;
+    this.fishSpawnInterval = 2000;
     this.init();
   }
 
+  startGameLoop() {
+    this.gameLoopInterval = requestAnimationFrame(() => this.update());
+    this.icebergInterval = setInterval(
+      () => this.placeIcebergs(),
+      this.icebergSpawnInterval
+    );
+    this.fishInterval = setInterval(
+      () => this.spawnFish(),
+      this.fishSpawnInterval
+    );
+  }
   init() {
     this.startButton.addEventListener("click", () => this.startGame());
     this.restartButton.addEventListener("click", () => this.restartGame());
@@ -85,17 +185,17 @@ class Game {
     document.addEventListener("keydown", (e) => this.movePenguin(e));
   }
 
-  startGameLoop() {
-    this.gameLoopInterval = requestAnimationFrame(() => this.update());
-    this.icebergInterval = setInterval(
-      () => this.placeIcebergs(),
-      this.icebergSpawnInterval
-    );
-    this.fishInterval = setInterval(
-      () => this.spawnFish(),
-      this.fishSpawnInterval
-    );
-  }
+  // startGameLoop() {
+  //   this.gameLoopInterval = requestAnimationFrame(() => this.update());
+  //   this.icebergInterval = setInterval(
+  //     () => this.placeIcebergs(),
+  //     this.icebergSpawnInterval
+  //   );
+  //   this.fishInterval = setInterval(
+  //     () => this.spawnFish(),
+  //     this.fishSpawnInterval
+  //   );
+  // }
 
   stopGameLoop() {
     cancelAnimationFrame(this.gameLoopInterval);
