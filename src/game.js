@@ -1,98 +1,10 @@
-class Penguin {
-  constructor(x, y, width, height, imgSrc) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.img = new Image();
-    this.img.src = imgSrc;
-    this.velocityY = 0;
-  }
-
-  draw(context) {
-    context.drawImage(this.img, this.x, this.y, this.width, this.height);
-  }
-
-  update() {
-    this.velocityY += gravity;
-    this.y = Math.max(this.y + this.velocityY, 0);
-
-    if (this.y + this.height > boardHeight) {
-      this.y = boardHeight - this.height;
-      this.velocityY = 0;
-    }
-  }
-
-  reset() {
-    this.y = penguinY;
-    this.velocityY = 0;
-  }
-
-  catchFish(fish) {
-    const penguinRight = this.x + this.width;
-    const penguinBottom = this.y + this.height;
-    const fishRight = fish.x + fish.width;
-    const fishBottom = fish.y + fish.height;
-
-    if (
-      penguinRight > fish.x &&
-      this.x < fishRight &&
-      penguinBottom > fish.y &&
-      this.y < fishBottom
-    ) {
-      return true;
-    }
-    return false;
-  }
-}
-
-class Iceberg {
-  constructor(x, y, width, height, imgSrc) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.img = new Image();
-    this.img.src = imgSrc;
-    this.passed = false;
-  }
-
-  draw(context) {
-    context.drawImage(this.img, this.x, this.y, this.width, this.height);
-  }
-
-  update() {
-    this.x += velocityX;
-  }
-}
-
-class Fish {
-  constructor(x, y, width, height, imgSrc) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.img = new Image();
-    this.img.src = imgSrc;
-    this.visible = false;
-  }
-
-  draw(context) {
-    if (this.visible) {
-      context.drawImage(this.img, this.x, this.y, this.width, this.height);
-    }
-  }
-
-  update() {
-    this.x += velocityX;
-  }
-}
-
 class Game {
   constructor() {
     this.board = document.getElementById("board");
     this.startPage = document.getElementById("start-page");
     this.startButton = document.getElementById("start-button");
+    this.restartButton = document.getElementById("restart-button");
+    this.gameEndPage = document.getElementById("game-end");
     this.context = this.board.getContext("2d");
     this.penguin = new Penguin(
       penguinX,
@@ -117,12 +29,14 @@ class Game {
 
   init() {
     this.startButton.addEventListener("click", () => this.startGame());
+    this.restartButton.addEventListener("click", () => this.restartGame());
     this.drawStartPage();
   }
 
   drawStartPage() {
     this.board.style.display = "none";
     this.startPage.style.display = "flex";
+    this.gameEndPage.style.display = "none";
   }
 
   startGame() {
@@ -172,13 +86,29 @@ class Game {
   }
 
   startGameLoop() {
-    requestAnimationFrame(() => this.update());
-    setInterval(() => this.placeIcebergs(), this.icebergSpawnInterval);
-    setInterval(() => this.spawnFish(), this.fishSpawnInterval);
+    this.gameLoopInterval = requestAnimationFrame(() => this.update());
+    this.icebergInterval = setInterval(
+      () => this.placeIcebergs(),
+      this.icebergSpawnInterval
+    );
+    this.fishInterval = setInterval(
+      () => this.spawnFish(),
+      this.fishSpawnInterval
+    );
+  }
+
+  stopGameLoop() {
+    cancelAnimationFrame(this.gameLoopInterval);
+    clearInterval(this.icebergInterval);
+    clearInterval(this.fishInterval);
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver) {
+      this.stopGameLoop();
+      this.showGameEndScreen();
+      return;
+    }
 
     this.context.clearRect(0, 0, this.board.width, this.board.height);
 
@@ -227,13 +157,10 @@ class Game {
 
     // Check for game over
     if (this.gameOver) {
-      this.context.font = "60px Arial";
-      this.context.fillStyle = "black";
-      this.context.fillText(
-        "Game Over",
-        this.board.width / 2 - 150,
-        this.board.height / 2
-      );
+      setTimeout(() => {
+        document.getElementById("game-end").style.display = "block";
+        document.getElementById("start-page").style.display = "none";
+      }, 0);
     } else {
       requestAnimationFrame(() => this.update());
     }
@@ -284,7 +211,6 @@ class Game {
 
     let spawnFishChance = Math.random();
     if (spawnFishChance < 1) {
-      // Adjust this probability as needed
       let fish = new Fish(
         this.board.width,
         Math.random() * (this.board.height - fishHeight),
@@ -302,21 +228,31 @@ class Game {
       this.penguin.velocityY = -5;
 
       if (this.gameOver) {
-        this.penguin.reset();
-        this.icebergArray = [];
-        this.fishArray = [];
-        this.score = 0;
-        this.gameOver = false;
+        this.restartGame();
       }
     }
   }
-}
 
+  showGameEndScreen() {
+    this.gameEndPage.style.display = "flex";
+  }
+
+  restartGame() {
+    this.penguin.reset();
+    this.icebergArray = [];
+    this.fishArray = [];
+    this.score = 0;
+    this.gameOver = false;
+    this.context.clearRect(0, 0, this.board.width, this.board.height);
+    this.startGameLoop();
+    this.gameEndPage.style.display = "none";
+  }
+}
 const boardWidth = 800;
 const boardHeight = 600;
 
 let penguinWidth = 50;
-let penguinHeight = 90;
+let penguinHeight = 100;
 let penguinX = 100;
 let penguinY = boardHeight / 2 - penguinHeight / 2;
 let icebergWidth = 250;
