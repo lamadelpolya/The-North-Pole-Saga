@@ -109,8 +109,8 @@ class Game {
     this.bottomIcebergImgSrc = "./images/iceberg1.png";
     this.fishImgSrc = "./images/fish.png";
 
-    this.icebergSpawnInterval = 6000; // Spawn icebergs every 5 seconds
-    this.fishSpawnInterval = 2000; // Spawn fish every 7 seconds
+    this.icebergSpawnInterval = 6000; // Spawn icebergs every 6 seconds
+    this.fishSpawnInterval = 2000; // Spawn fish every 2 seconds
 
     this.init();
   }
@@ -191,53 +191,75 @@ class Game {
     }
 
     // Update and draw icebergs
-    this.icebergArray.forEach((iceberg) => {
+    this.icebergArray.forEach((iceberg, index) => {
       iceberg.update();
       iceberg.draw(this.context);
 
       if (iceberg.x + iceberg.width < 0) {
-        iceberg.x = this.board.width;
-        iceberg.y =
-          this.board.height -
-          iceberg.height -
-          Math.random() * (this.board.height / 2);
-        iceberg.passed = false;
+        this.icebergArray.splice(index, 1);
       }
 
       if (!iceberg.passed && this.penguin.x > iceberg.x + iceberg.width) {
         this.score += 1;
         iceberg.passed = true;
       }
+
+      // Check for collision between penguin and iceberg
+      if (this.didCollide(this.penguin, iceberg)) {
+        this.gameOver = true;
+      }
     });
 
-    // Update and draw fish
-    this.fishArray.forEach((fish) => {
+    this.fishArray.forEach((fish, index) => {
       fish.update();
       fish.draw(this.context);
 
       if (this.penguin.catchFish(fish)) {
         this.score += 1;
-        fish.visible = false;
+        this.fishArray.splice(index, 1);
       }
     });
 
-    // Clear fish that are out of the board
-    this.fishArray = this.fishArray.filter((fish) => fish.x >= -fish.width);
-
     // Draw score
-    const centerX = this.board.width / 2;
-    const centerY = this.board.height / 2;
-    this.context.textAlign = "center";
+    this.context.font = "30px Arial";
+    this.context.fillStyle = "black";
+    this.context.fillText(`Score: ${this.score}`, 10, 50);
 
-    this.context.fillStyle = "white";
-    this.context.font = "30px cursive";
-    this.context.fillText("Score: " + this.score, 80, 55);
-
+    // Check for game over
     if (this.gameOver) {
-      this.context.fillText("GAME OVER", centerX, centerY + 50); // Adjust the Y coordinate as needed
+      this.context.font = "60px Arial";
+      this.context.fillStyle = "black";
+      this.context.fillText(
+        "Game Over",
+        this.board.width / 2 - 150,
+        this.board.height / 2
+      );
     } else {
       requestAnimationFrame(() => this.update());
     }
+  }
+
+  didCollide(penguin, iceberg) {
+    const penguinRect = {
+      left: penguin.x,
+      top: penguin.y,
+      right: penguin.x + penguin.width,
+      bottom: penguin.y + penguin.height,
+    };
+
+    const icebergRect = {
+      left: iceberg.x,
+      top: iceberg.y,
+      right: iceberg.x + iceberg.width,
+      bottom: iceberg.y + iceberg.height,
+    };
+
+    return (
+      penguinRect.left < icebergRect.right &&
+      penguinRect.right > icebergRect.left &&
+      penguinRect.top < icebergRect.bottom &&
+      penguinRect.bottom > icebergRect.top
+    );
   }
 
   placeIcebergs() {
@@ -290,15 +312,6 @@ class Game {
   }
 }
 
-// function detectCollision(a, b) {
-//   return (
-//     a.x < b.x + b.width && //a's top left corner doesn't reach b's top right corner
-//     a.x + a.width > b.x && //a's top right corner passes b's top left corner
-//     a.y < b.y + b.height && //a's top left corner doesn't reach b's bottom left corner
-//     a.y + a.height > b.y
-//   ); //a's bottom left corner passes b's top left corner
-// }
-// Define board dimensions globally
 const boardWidth = 800;
 const boardHeight = 600;
 
