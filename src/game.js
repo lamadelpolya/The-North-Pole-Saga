@@ -106,8 +106,8 @@ class Game {
     this.gameOver = false;
     this.score = 0;
 
-    this.bottomIcebergImgSrc = "./images/iceberg1.png";
-    this.fishImgSrc = "./images/fish.png";
+    this.bottomIcebergImgSrc = "./images/iceberg.png";
+    this.fishImgSrc = "./images/fish1.png";
 
     this.icebergSpawnInterval = 6000; // Spawn icebergs every 6 seconds
     this.fishSpawnInterval = 2000; // Spawn fish every 2 seconds
@@ -186,7 +186,7 @@ class Game {
     this.penguin.update();
     this.penguin.draw(this.context);
 
-    if (this.penguin.y + this.penguin.height >= this.board.height) {
+    if (this.penguin.y + this.penguin.height >= this.board.height + 10) {
       this.gameOver = true;
     }
 
@@ -299,7 +299,7 @@ class Game {
 
   movePenguin(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
-      this.penguin.velocityY = -6;
+      this.penguin.velocityY = -5;
 
       if (this.gameOver) {
         this.penguin.reset();
@@ -315,14 +315,14 @@ class Game {
 const boardWidth = 800;
 const boardHeight = 600;
 
-let penguinWidth = 150;
-let penguinHeight = 150;
+let penguinWidth = 50;
+let penguinHeight = 90;
 let penguinX = 100;
 let penguinY = boardHeight / 2 - penguinHeight / 2;
-let icebergWidth = 200;
-let icebergHeight = 100;
-let fishWidth = 250;
-let fishHeight = 300;
+let icebergWidth = 250;
+let icebergHeight = 200;
+let fishWidth = 50;
+let fishHeight = 50;
 
 let velocityX = -2;
 let gravity = 0.2;
