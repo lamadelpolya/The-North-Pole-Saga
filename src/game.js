@@ -111,22 +111,25 @@ class Game {
     this.bottomIcebergImgSrc = "./images/iceberg.png";
     this.fishImgSrc = "./images/fish1.png";
 
-    this.icebergSpawnInterval = 6000;
-    this.fishSpawnInterval = 2000;
+    // this.icebergSpawnInterval = 6000;
+    // this.fishSpawnInterval = 2000;
+    this.icebergInterval = null;
+    this.fishInterval = null;
+
     this.init();
   }
 
   startGameLoop() {
     this.gameLoopInterval = requestAnimationFrame(() => this.update());
-    this.icebergInterval = setInterval(
-      () => this.placeIcebergs(),
-      this.icebergSpawnInterval
-    );
-    this.fishInterval = setInterval(
-      () => this.spawnFish(),
-      this.fishSpawnInterval
-    );
+    this.icebergInterval = setInterval(() => {
+      this.placeIcebergs();
+      // if (this.gameOver) {
+      //   // clearInterval(this.icebergInterval);
+      // }
+    }, 6000);
+    this.fishInterval = setInterval(() => this.spawnFish(), 2000);
   }
+
   init() {
     this.startButton.addEventListener("click", () => this.startGame());
     this.restartButton.addEventListener("click", () => this.restartGame());
@@ -201,14 +204,15 @@ class Game {
     cancelAnimationFrame(this.gameLoopInterval);
     clearInterval(this.icebergInterval);
     clearInterval(this.fishInterval);
+    console.log("stop game loop called");
   }
 
   update() {
-    if (this.gameOver) {
-      this.stopGameLoop();
-      this.showGameEndScreen();
-      return;
-    }
+    console.log(" first game over", this.gameOver);
+    // if (this.gameOver) {
+    //   this.stopGameLoop();
+    //   this.showGameEndScreen();
+    // }
 
     this.context.clearRect(0, 0, this.board.width, this.board.height);
 
@@ -216,9 +220,9 @@ class Game {
     this.penguin.update();
     this.penguin.draw(this.context);
 
-    if (this.penguin.y + this.penguin.height >= this.board.height + 10) {
-      this.gameOver = true;
-    }
+    // if (this.penguin.y + this.penguin.height >= this.board.height + 10) {
+    //   this.gameOver = true;
+    // }
 
     // Update and draw icebergs
     this.icebergArray.forEach((iceberg, index) => {
@@ -240,6 +244,11 @@ class Game {
       }
     });
 
+    // if (this.gameOver) {
+    //   console.log('game over stop', this.gameOver);
+    //   this.stopGameLoop();
+    //   this.showGameEndScreen();
+    // }
     this.fishArray.forEach((fish, index) => {
       fish.update();
       fish.draw(this.context);
@@ -256,7 +265,11 @@ class Game {
     this.context.fillText(`Score: ${this.score}`, 10, 50);
 
     // Check for game over
+
     if (this.gameOver) {
+      console.log("game over in update", this.gameOver);
+      this.stopGameLoop();
+      this.showGameEndScreen();
       setTimeout(() => {
         document.getElementById("game-end").style.display = "block";
         document.getElementById("start-page").style.display = "none";
